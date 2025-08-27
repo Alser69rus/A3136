@@ -1,0 +1,6 @@
+WARNING:root:ModbusSerialClient(rtu baud[9600])
+ERROR:pymodbus.client.sync:could not open port 'COM2': FileNotFoundError(2, 'Не удается найти указанный файл.', None, 2)
+ERROR:pymodbus.client.sync:could not open port 'COM4': FileNotFoundError(2, 'Не удается найти указанный файл.', None, 2)
+ERROR:pymodbus.client.sync:could not open port 'COM1': FileNotFoundError(2, 'Не удается найти указанный файл.', None, 2)
+ERROR:pymodbus.client.sync:could not open port 'COM3': FileNotFoundError(2, 'Не удается найти указанный файл.', None, 2)
+WARNING:root:0

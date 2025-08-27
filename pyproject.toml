@@ -1,0 +1,21 @@
+[project]
+name = "a3136p"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy==1.19",
+    "pip>=25.0.1",
+    "psutil==5.7",
+    "pydeps>=3.0.1",
+    "pyinstaller>=6.15.0",
+    "pymodbus==2.3",
+    "pyqt5==5.15.0",
+    "pyqt5-sip>=12.15.0",
+    "pyqt5-stubs>=5.15.6.0",
+    "pyqtgraph>=0.12.4",
+    "pyserial>=3.5",
+    "pytest>=8.3.5",
+    "six>=1.17.0",
+]
