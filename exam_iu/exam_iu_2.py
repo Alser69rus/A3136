@@ -573,31 +573,28 @@ class PrintResult(QtCore.QState):
     OFF_I = 0.8
 
     def onEntry(self, QEvent):
-        settings = QtCore.QSettings('settings.ini', QtCore.QSettings.IniFormat)
-        settings.setIniCodec('UTF-8')
-        protocol_path = settings.value('protocol/path', 'c:\\протоколы\\')
-        settings.setValue('protocol/path', protocol_path)
+        settings = self.load_settings('settings.ini')
+
+        default_protocol_dir = settings.value('protocol/path', 'c:\\протоколы\\')
+        num=int(settings.value('protocol/num', 0))
         last_date = settings.value('protocol/date', '01-01-2019')
-        data.num = int(settings.value('protocol/num', 0))
         today = datetime.datetime.today()
-        month = int(str(last_date).split('-')[1])
-        if month != today.month:
-            data.num = 0
-        data.num += 1
-        protocol_path += f'{today.year:0>4}-{today.month:0>2}\\'
+        data.num=self.get_protocol_num(num, last_date, today)
+
+        protocol_path = default_protocol_dir + f'{today.year:0>4}-{today.month:0>2}\\'
         if not os.path.exists(protocol_path):
             os.makedirs(protocol_path)
-        protocol_path += f'N {data.num} {today.day:0>2}-{today.month:0>2}-{today.year:0>4} ИУ {iu.dev_type} завN' + \
+
+        protocol_file = f'N {data.num} {today.day:0>2}-{today.month:0>2}-{today.year:0>4} ИУ {iu.dev_type} завN' + \
                          f' {frm_main.auth.num} {frm_main.auth.date}.pdf'
 
         frm_main.frm_print.updatePreview()
         frm_main.stl.setCurrentWidget(frm_main.frm_print)
-        wr = QtGui.QPdfWriter(protocol_path)
+        wr = QtGui.QPdfWriter(protocol_path + protocol_file)
         self.preview(wr)
 
-        settings.setValue('protocol/num', data.num)
-        settings.setValue('protocol/date', today.strftime('%d-%m-%Y'))
-
+        self.save_settings(settings, data.num, today)
+        
     def preview(self, printer):
         SPACE = 62
 
@@ -787,3 +784,25 @@ class PrintResult(QtCore.QState):
         painter.drawText(x + 312, y, f'{frm_main.auth.name2: >50}    {"_" * 20}')
 
         painter.end()
+
+    @staticmethod
+    def load_settings(filename: str) -> QtCore.QSettings:
+        """Load settings from a file."""
+        settings = QtCore.QSettings(filename, QtCore.QSettings.IniFormat)
+        settings.setIniCodec('UTF-8')
+        return settings
+    
+    @staticmethod
+    def get_protocol_num(last_num:int,Last_date:str,today: datetime.datetime) -> int:
+        month = int(str(Last_date).split('-')[1])
+        if month != today.month:
+            last_num = 0
+        last_num += 1
+        return last_num
+    
+    @staticmethod
+    def save_settings(settings: QtCore.QSettings, num:int, date:datetime.datetime) -> None:
+        """Save settings to a file."""
+        settings.setValue('protocol/num', num)
+        settings.setValue('protocol/date', date.strftime('%d-%m-%Y'))
+        settings.sync()
