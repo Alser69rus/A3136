@@ -579,14 +579,20 @@ class PrintResult(QtCore.QState):
         num=int(settings.value('protocol/num', 0))
         last_date = settings.value('protocol/date', '01-01-2019')
         today = datetime.datetime.today()
+
         data.num=self.get_protocol_num(num, last_date, today)
 
         protocol_path = default_protocol_dir + f'{today.year:0>4}-{today.month:0>2}\\'
         if not os.path.exists(protocol_path):
             os.makedirs(protocol_path)
 
-        protocol_file = f'N {data.num} {today.day:0>2}-{today.month:0>2}-{today.year:0>4} ИУ {iu.dev_type} завN' + \
-                         f' {frm_main.auth.num} {frm_main.auth.date}.pdf'
+        protocol_file = (f'N {data.num}'
+                         f' {today.day:0>2}'
+                         f'-{today.month:0>2}'
+                         f'-{today.year:0>4}'
+                         f' ИУ {iu.dev_type} завN'
+                         f' {frm_main.auth.num}'
+                         f' {frm_main.auth.date}.pdf')
 
         frm_main.frm_print.updatePreview()
         frm_main.stl.setCurrentWidget(frm_main.frm_print)
@@ -799,6 +805,7 @@ class PrintResult(QtCore.QState):
             last_num = 0
         last_num += 1
         return last_num
+    
     
     @staticmethod
     def save_settings(settings: QtCore.QSettings, num:int, date:datetime.datetime) -> None:
