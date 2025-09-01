@@ -574,17 +574,17 @@ class PrintResult(QtCore.QState):
 
     def onEntry(self, QEvent):
         settings = self.load_settings('settings.ini')
-
-        default_protocol_dir = settings.value('protocol/path', 'c:\\протоколы\\')
+        
         num=int(settings.value('protocol/num', 0))
         last_date = settings.value('protocol/date', '01-01-2019')
         today = datetime.datetime.today()
-
         data.num=self.get_protocol_num(num, last_date, today)
 
-        protocol_path = default_protocol_dir + f'{today.year:0>4}-{today.month:0>2}\\'
-        if not os.path.exists(protocol_path):
-            os.makedirs(protocol_path)
+        default_protocol_dir = settings.value('protocol/path', 'c:\\протоколы\\')
+        protocol_dir = (default_protocol_dir +
+                        f'{today.year:0>4}'
+                        f'-{today.month:0>2}\\')
+        self.create_protocol_dir_if_not_exists(protocol_dir)
 
         protocol_file = (f'N {data.num}'
                          f' {today.day:0>2}'
@@ -596,7 +596,7 @@ class PrintResult(QtCore.QState):
 
         frm_main.frm_print.updatePreview()
         frm_main.stl.setCurrentWidget(frm_main.frm_print)
-        wr = QtGui.QPdfWriter(protocol_path + protocol_file)
+        wr = QtGui.QPdfWriter(protocol_dir + protocol_file)
         self.preview(wr)
 
         self.save_settings(settings, data.num, today)
@@ -813,3 +813,8 @@ class PrintResult(QtCore.QState):
         settings.setValue('protocol/num', num)
         settings.setValue('protocol/date', date.strftime('%d-%m-%Y'))
         settings.sync()
+
+    @staticmethod
+    def create_protocol_dir_if_not_exists(protocol_dir: str) -> None:
+        if not os.path.exists(protocol_dir):
+            os.makedirs(protocol_dir)
