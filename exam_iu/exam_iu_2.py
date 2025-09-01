@@ -12,6 +12,26 @@ iu = None
 data = None
 ti = None
 
+BREAKING_SPEED = 50 #скорость при которой частотник считается готовым к остановке
+DI_PIN_COUNT = 32 #количество дискретных входов
+VALCODER_CHANEL = 2 #канал валкодера br3
+ANGLE_CHANEL = 0 #канал датчика угла
+DP_CHANEL = 7 #канал датчика положения
+CURRENT_MANUAL_1 = 10 #ток вручную установленный в 10 при старте
+CONNECT_DELAY = 1 #время задержки при подключении устройств
+PRESSURE_MEASUREMENTS = 23 #количество измерений давления
+MAX_CURRENT = 2.6 #максимальный ток в амперах
+MIN_CURRENT = 0.8 #минимальный ток в амперах
+MAX_ANGLE = 9.5 #максимальная позиция датчика угла
+MIN_ANGLE = 0.5 #минимальная позиция датчика угла
+MAX_MEASUREMENTS = 990 #максимальное количество измерений датчика угла
+MIN_MEASUREMENTS = 10 #минимальное количество измерений датчика угла
+MAX_FAST_ANGLE = 7.5 #максимальная позиция датчика угла для быстрого измерения
+MIN_FAST_ANGLE = 2.5 #минимальная позиция датчика угла для быстрого измерения
+MAX_FAST_CURRENT = 1.95 #максимальный ток в амперах для быстрого измерения
+MIN_FAST_CURRENT = 1.35 #минимальный ток в амперах для быстрого измерения
+FAST_SPEED=5 #максимальная скорость для быстрого измерения
+LOW_SPEED=1 #минимальная скорость измерения
 
 @dataclass
 class Data:
@@ -215,14 +235,14 @@ class StopPCHV(QtCore.QState):
     
     def onEntry(self, e):
         opc.pchv.stop()
-        if opc.pchv.speed<50:
+        if opc.pchv.speed<BREAKING_SPEED:
             self.done.emit()
 
 
 class DisconnectDevices(QtCore.QState):
     def onEntry(self, e):
         opc.pchv.setActive(False)
-        opc.do2.setValue([0] * 32)
+        opc.do2.setValue([0] * DI_PIN_COUNT)
 
 
 class Finish(QtCore.QFinalState):
@@ -243,12 +263,11 @@ class Install0(QtCore.QState):
     def onEntry(self, e):
         global data
         frm_main.disconnectmenu()
-        opc.freq.setClear(2)
+        opc.freq.setClear(VALCODER_CHANEL)
         opc.ai.setActive(True)
         opc.di.setActive(True)
         opc.pa3.setActive(True)
         opc.pchv.setActive(False)
-        # frm_main.stl.setCurrentWidget(frm)
         data = Data()
 
 
@@ -278,7 +297,7 @@ class ConnectDev(QtCore.QState):
         opc.connect_pchv(True, iu.dir[0])
         opc.connect_pe(True)
         opc.connect_dp(True)
-        opc.current.setActive('manual', 10)
+        opc.current.setActive('manual', CURRENT_MANUAL_1)
         opc.set_encoder_invert(iu.encoder_invert)
         print("invert pchv", iu.encoder_invert)
 
@@ -287,13 +306,13 @@ class ConnectPchvReverse(QtCore.QState):
     def onEntry(self, QEvent):
         opc.connect_pchv(True, iu.dir[1])
         data.speed_idx = 1
-        time.sleep(1)
+        time.sleep(CONNECT_DELAY)
 
 
 class ConnectPchv(QtCore.QState):
     def onEntry(self, QEvent):
         opc.connect_pchv(True, iu.dir[0])
-        time.sleep(1)
+        time.sleep(CONNECT_DELAY)
 
 
 class Prepare(QtCore.QState):
@@ -341,8 +360,8 @@ class MeasureP(QtCore.QState):
         data.value += opc.pressure
         frm1.text.setText('<p>Ожидайте.<br>Выполняется измерение давления в аккумуляторе<br>'
                           'Давление: {: 5.3f} МПа, измерение завершено на: {:.0%}</p>'.format(data.value / data.count,
-                                                                                              data.count / 23))
-        if data.count == 23:
+                                                                                              data.count / PRESSURE_MEASUREMENTS))
+        if data.count == PRESSURE_MEASUREMENTS:
             data.pr.append(data.value / data.count)
             data.speed_idx += 1
             self.done.emit()
@@ -374,7 +393,7 @@ class SetPos0(QtCore.QState):
         # frm.img.setPixmap(frm.img_empty)
         frm.img.setMinimumHeight(frm.GR_HEIGHT)
         frm.img.clear()
-        opc.freq.setClear(0)
+        opc.freq.setClear(ANGLE_CHANEL)
         data.count = 0
         data.i=0
         data.a=0
@@ -387,11 +406,10 @@ class SetCurrentUp(QtCore.QState):
 
     def onEntry(self, QEvent):
         data.i = opc.pa3.value
-        #data.a = opc.freq.value[0]
         data.a=opc.br2
-        data.f = opc.freq.value[7]
+        data.f = opc.freq.value[DP_CHANEL]
 
-        if data.i > 2.6 or data.a > 9.5 or data.count > 990:
+        if data.i > MAX_CURRENT or data.a > MAX_ANGLE or data.count > MAX_MEASUREMENTS:
 
             self.done.emit()
         else:
@@ -403,10 +421,10 @@ class SetCurrentUp(QtCore.QState):
             data.arr.append((data.i, data.a, data.f))
             frm.arr = data.arr
             frm.img.update()
-        if 0.5 <= data.a <= 2.5 or 7.5 <= data.a <= 9.5 or 1.25 <= data.i <= 1.35 or 1.95 <= data.i <= 2.05:
-            data.count += 1
+        if MIN_FAST_ANGLE <= data.a <= MAX_FAST_ANGLE or MIN_FAST_CURRENT <= data.i <= MAX_FAST_CURRENT:
+            data.count += FAST_SPEED
         else:
-            data.count += 5
+            data.count += LOW_SPEED
         opc.current.setActive('manual', data.count)
         data.count2 = 0
         data.i = 0
@@ -421,7 +439,7 @@ class SetCurrentDown(QtCore.QState):
         data.i = opc.pa3.value
         data.a = opc.br2
         data.f = opc.freq.value[7]
-        if data.i < 0.8 or data.a < 0.1 or data.count < 10:
+        if data.i < MIN_CURRENT or data.a < MIN_ANGLE or data.count < MIN_MEASUREMENTS:
             self.done.emit()
         else:
             frm.text.setText(f'<p>Выполняется построение рабочей диаграмы:</p>'
@@ -433,10 +451,10 @@ class SetCurrentDown(QtCore.QState):
             frm.arr = data.arr
             frm.img.update()
 
-        if 0.5 <= data.a <= 2.5 or 7.5 <= data.a <= 9.5 or 1.25 <= data.i <= 1.35 or 1.95 <= data.i <= 2.05:
-            data.count -= 1
+        if MIN_FAST_ANGLE <= data.a <= MAX_FAST_ANGLE or MIN_FAST_CURRENT <= data.i <= MAX_FAST_CURRENT:
+            data.count -= FAST_SPEED
         else:
-            data.count -= 5
+            data.count -= LOW_SPEED
 
         opc.current.setActive('manual', data.count)
 
@@ -451,11 +469,11 @@ class MeasureIAF(QtCore.QState):
 
     def onEntry(self, QEvent):
 
-        data.count2 += 1
+        data.count2 += LOW_SPEED
         data.i += opc.pa3.value
-        data.a += opc.freq.value[0]
-        data.f += opc.freq.value[7]
-        if opc.pa3.value < 0.8:
+        data.a += opc.freq.value[ANGLE_CHANEL]
+        data.f += opc.freq.value[DP_CHANEL]
+        if opc.pa3.value < MIN_CURRENT:
             self.done.emit()
         if data.count2 >= 0:
             data.i /= data.count2
@@ -474,7 +492,7 @@ class StopAll(QtCore.QState):
 class ExtractRes(QtCore.QState):
     def onEntry(self, QEvent):
         global data
-        data.arr = [v for v in data.arr if 0.8 <= v[0] <= 2.6]
+        data.arr = [v for v in data.arr if MIN_CURRENT <= v[0] <= MAX_CURRENT]
 
         def MNK(values):
             n = len(values)
@@ -582,12 +600,10 @@ class PrintResult(QtCore.QState):
 
     def preview(self, printer):
         SPACE = 62
-        # V_SPACE = 20
 
         layout = QtGui.QPageLayout()
         layout.setPageSize(QtGui.QPageSize(QtGui.QPageSize.A4))
         layout.setOrientation(QtGui.QPageLayout.Portrait)
-        # layout.setMargins(20, 10, 5, 15, QtPrintSupport.QPrinter.Millimeter)
         printer.setPageLayout(layout)
         printer.setResolution(300)
         painter = QtGui.QPainter()
@@ -604,13 +620,11 @@ class PrintResult(QtCore.QState):
         protocol_date = datetime.datetime.today().strftime('%d-%m-%Y')
 
         # Заголовок
-        # x, y = 200, 30
         x, y = 625, 94
         painter.setFont(header_font)
         painter.drawText(x, y, f'Протокол испытания № {protocol_num: <3d} от  {protocol_date}')
         painter.setFont(font)
         # Шапка
-        # x = 50
         x = 156
         y += SPACE * 2.5
         painter.drawText(x, y, f'Тип исполнительного устройства: {iu.dev_type}')
@@ -618,9 +632,9 @@ class PrintResult(QtCore.QState):
         painter.drawText(x, y, f'Зав. № {frm_main.auth.num}     Дата изготовления: {frm_main.auth.date}')
         y += SPACE
         painter.drawText(x, y, f'Тепловоз № {frm_main.auth.locomotive}     Секция: {frm_main.auth.section}')
+        
         # Шапка таблицы
         y += SPACE * 1.5
-        # w = [0, 400, 520, 620]
         w = [0, 1250, 1625, 1937]
 
         def print_row(row):
@@ -676,20 +690,12 @@ class PrintResult(QtCore.QState):
             painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.red)),8))
             painter.drawPolyline(*points)
 
-            #painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.blue)), 4))
-            #painter.drawPolyline(*points2)
-
-            # painter.drawRect(x + self.WIDTH - 300, y,
-            #                 x + self.WIDTH, y + 200)
-            #painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.blue)),4))
-            #painter.drawLine(x + self.WIDTH - 40, y + 250, x + self.WIDTH, y + 250)
             painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.red)), 8))
             painter.drawLine(x + self.WIDTH - 40, y + 300, x + self.WIDTH, y + 300)
             painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.green)), 4))
             painter.drawLine(x + self.WIDTH - 40, y + 350, x + self.WIDTH, y + 350)
 
             painter.setPen(QtGui.QPen(QtGui.QBrush(QtGui.QColor(QtCore.Qt.black)), 2))
-            #painter.drawText(x + self.WIDTH + 20, y + 250, 'Рабочая характеристика')
             painter.drawText(x + self.WIDTH + 20, y + 300, 'Данные измерений')
             painter.drawText(x + self.WIDTH + 20, y + 350, 'Норм. характеристика')
 
@@ -697,7 +703,6 @@ class PrintResult(QtCore.QState):
 
         print_row(['Параметр', 'Норма', 'Факт', 'Результат'])
         y += SPACE
-        # y += 20
         name = f'1. Давление масла на скорости {iu.speed[1]} об/мин, МПа'
         norm = f'не менее {iu.pressure[0]: >3.2f}'
         print_row([name, norm, '', ''])
