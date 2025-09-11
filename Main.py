@@ -11,7 +11,6 @@ from exam_bp.exam_bp import ExamBp
 from exam_bu.bu_ai_tune import BuAiTune, BuRtTune
 from exam_bu.bu_dp import TuneBuDp
 from exam_bu.exam_bu_prog import Exam_bu
-from exam_iu.exam_iu import ExamIU
 from exam_iu.exam_iu_2 import ExamIU2
 
 logging.basicConfig(filename='log\\log.txt', filemode='w', level=logging.INFO)
@@ -54,7 +53,7 @@ class Main(QtCore.QObject):
         self.iu_dp = exam_iu.exam_iu_dp.ExamIUDP(self.stm, self.opc, self.form)
         self.iu_auth = IuAuth(self.stm)
         self.iu_select = IuSelect(self.stm)
-        self.exam_iu_old = ExamIU(self.stm, self.opc, self.form)
+        #self.exam_iu_old = ExamIU(self.stm, self.opc, self.form)
         self.exam_iu = ExamIU2(self.stm, self.opc, self.form)
 
         self.menu_bu = MenuBU(self.stm)

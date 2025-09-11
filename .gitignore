@@ -2,3 +2,5 @@
 .Log/
 .mypy_cache/
 __pycache__/
+dist/
+build/
