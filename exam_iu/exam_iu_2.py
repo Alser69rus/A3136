@@ -751,10 +751,10 @@ class PrintResult(QtCore.QState):
         if not (iu.freq is None):
             name = '5. Проверка сигнала ДП на позиции "1", кГц'
             if data.f1 > data.f9:
-                norm = 'не менее 24'
+                norm = 'не менее 22'
                 res = 'норма' if data.f1 >= iu.freq[1] else 'НЕ НОРМА'
             else:
-                norm = 'не более 20'
+                norm = 'не более 18'
                 res = 'норма' if 10 <= data.f1 <= iu.freq[0] else 'НЕ НОРМА'
             fact = f'{data.f1: <6.3f}'
 
@@ -762,10 +762,10 @@ class PrintResult(QtCore.QState):
 
             name = '6. Проверка сигнала ДП на позиции "9", кГц'
             if data.f1 < data.f9:
-                norm = 'не менее 24'
+                norm = 'не менее 22'
                 res = 'норма' if data.f9 >= iu.freq[1] else 'НЕ НОРМА'
             else:
-                norm = 'не более 20'
+                norm = 'не более 18'
                 res = 'норма' if 10 <= data.f9 <= iu.freq[0] else 'НЕ НОРМА'
             fact = f'{data.f9: <6.3f}'
 

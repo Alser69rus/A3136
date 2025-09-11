@@ -14,7 +14,7 @@ class SelectIU(Menu):
         self.speed = (300, 500, 1000, 500, 500)
         self.pressure = (0.6, 1.0)
         self.current = (1.15, 1.35, 1.95, 2.15)
-        self.freq = (20.0, 24.0)
+        self.freq = (18.0, 22.0)
         self.encoder_invert=False
 
         self.btn_iu_104 = Btn('ЭГУ104')
@@ -54,25 +54,25 @@ class SelectIU(Menu):
             self.speed = (300, 300, 1000, 500, 500)
             self.pressure = (0.8, 1.0)
             self.current = (1.15, 1.35, 1.95, 2.15)
-            self.freq = (20.0, 24.0)
+            self.freq = (18.0, 22.0)
         if self.dev_type == 'ЭГУ104П':
             self.dir = (False, False)
             self.speed = (300, 300, 1000, 500, 500)
             self.pressure = (0.8, 1.0)
             self.current = (1.15, 1.35, 1.95, 2.15)
-            self.freq = (20.0, 24.0)
+            self.freq = (18.0, 22.0)
         if self.dev_type == 'ЭГУ104Л':
             self.dir = (True, True)
             self.speed = (300, 300, 1000, 500, 500)
             self.pressure = (0.8, 1.0)
             self.current = (1.15, 1.35, 1.95, 2.15)
-            self.freq = (20.0, 24.0)
+            self.freq = (18.0, 22.0)
         if self.dev_type == 'ЭГУ104 - 01П':
             self.dir = (True, True)
             self.speed = (300, 300, 1000, 500, 500)
             self.pressure = (0.8, 1.0)
             self.current = (1.15, 1.35, 1.95, 2.15)
-            self.freq = (20.0, 24.0)
+            self.freq = (18.0, 22.0)
         if self.dev_type == 'ЭГУ102':
             self.dir = (True, True)
             self.speed = (300, 300, 750, 500, 500)
@@ -90,7 +90,7 @@ class SelectIU(Menu):
             self.speed = (300, 300, 1400, 500, 700)
             self.pressure = (0.6, 0.7)
             self.current = (1.1, 1.4, 1.9, 2.3)
-            self.freq = (20.0, 24.0)
+            self.freq = (18.0, 22.0)
             self.encoder_invert=True
         if self.dev_type == 'ЭГУ114':
             self.dir = (True, True)

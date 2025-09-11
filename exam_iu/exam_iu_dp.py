@@ -405,8 +405,8 @@ class ShowResult(QtCore.QState):
     def onEntry(self, QEvent):
         global com
         if com.f1 < com.f2:
-            res1 = 'НОРМА' if com.f1 <= 20 else '<font color="red">НЕ НОРМА<font color="black">'
-            res2 = 'НОРМА' if com.f2 >= 24 else '<font color="red">НЕ НОРМА<font color="black">'
+            res1 = 'НОРМА' if com.f1 <= 18 else '<font color="red">НЕ НОРМА<font color="black">'
+            res2 = 'НОРМА' if com.f2 >= 22 else '<font color="red">НЕ НОРМА<font color="black">'
             res3 = 'НОРМА' if com.f3 >= com.f2 + 0.5 else '<font color="red">НЕ НОРМА<font color="black">'
             com.text.setText('<p>Результаты проверки:</p>'
                              '<p>Показания датчика положения:<br> на позиции "0": '
@@ -417,8 +417,8 @@ class ShowResult(QtCore.QState):
                              ', результат: {}</p>'.format(res3) + \
                              '<p><br>Нажать ДА для продолжения</p>')
         else:
-            res1 = 'НОРМА' if com.f1 >= 24 else '<font color="red">НЕ НОРМА<font color="black">'
-            res2 = 'НОРМА' if com.f2 <= 20 else '<font color="red">НЕ НОРМА<font color="black">'
+            res1 = 'НОРМА' if com.f1 >= 22 else '<font color="red">НЕ НОРМА<font color="black">'
+            res2 = 'НОРМА' if com.f2 <= 18 else '<font color="red">НЕ НОРМА<font color="black">'
             res3 = 'НОРМА' if com.f3 <= com.f2 - 0.5 else '<font color="red">НЕ НОРМА<font color="black">'
             com.text.setText('<p>Результаты проверки:</p>'
                              '<p>Показания датчика положения:<br> на позиции "0": '
